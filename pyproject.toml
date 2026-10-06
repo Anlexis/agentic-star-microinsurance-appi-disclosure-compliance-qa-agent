@@ -1,0 +1,53 @@
+[project]
+name = "ins-c2-038"
+version = "0.1.0"
+description = "MicroinsuranceAppiComplianceQaAgent — AgentCore Template"
+requires-python = ">=3.11"
+# The framework (agenticstar-agentcore) is NOT a public-PyPI dependency; it is
+# provided by CI per repository generation — a stub package on PYTHONPATH for older repos,
+# or installed from the package registry for wheel-era repos (see the dual-mode
+# run-tests job in the pipeline definition). Pinning it here would make `pip install -e .`
+# fail because it is not resolvable from the default index.
+dependencies = [
+    "agenticstar-agentcore[marketplace,openai]==1.0.3",]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.0.3",
+    "pytest-cov==5.0.0",
+    "pytest-asyncio==1.4.0",
+    "ruff==0.4.4",
+    "mypy==1.10.0",
+    "types-PyYAML==6.0.12.20260815",
+]
+
+[build-system]
+requires = ["setuptools==68.2.2"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+# The sample graphs under src/examples/ are centrally distributed reference files;
+# they are checked by the gate scripts but not edited here.
+exclude = ["src/examples/"]
+# The published framework wheel ships no py.typed marker, so framework.* and
+# shared.* imports resolve to Any — which turns every required framework subclass
+# into an untyped-import / subclass-of-Any error. Every other strict setting stays on.
+disallow_subclassing_any = false
+
+[[tool.mypy.overrides]]
+module = ["framework.*", "shared.*"]
+ignore_missing_imports = true
+
+# State extends the framework's AgentState TypedDict with NotRequired fields —
+# correct at runtime, but the untyped wheel makes AgentState resolve to Any, so
+# mypy cannot see the TypedDict base and mis-flags every field. Silence only that
+# diagnostic, and only for this module: the errors all have the one cause.
+[[tool.mypy.overrides]]
+module = ["src.schemas.state"]
+disable_error_code = ["valid-type"]

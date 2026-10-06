@@ -1,0 +1,23 @@
+# Agent Manifest — AgentRegistry entry point
+# AgentRegistry (mediator/registry/agent_registry.py) reads every key below at
+# ROOT level — do NOT nest keys under an `agent:` block.
+id: "INS-C2-038"
+name: "Microinsurance APPI 2026 & Disclosure Compliance Q&A Agent"
+namespace: "ins"
+version: "0.1.0"
+enabled: true
+category: "Cat 2"
+generation_mode: "deterministic"  # deterministic | llm
+industry: "INS"
+
+base_type: "RAGAgent"
+
+# Entry point — single dotted import path (module.Class), NOT split module:/class:.
+class: "src.graph.graph.MicroinsuranceAppiComplianceQaAgent"
+
+required_trust_level: "VERIFIED_EXTERNAL"
+
+# Compile-time gates — declare every ctx.secrets.require() key + constructed extra.
+requires:
+  secrets: []
+  extras: []

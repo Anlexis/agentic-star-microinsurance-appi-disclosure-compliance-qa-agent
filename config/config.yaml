@@ -1,0 +1,39 @@
+# Runtime parameters — read at graph construction and passed to the inner graph.
+# Separate from config/agent.yaml, which is the static manifest and carries no
+# runtime block.
+#
+# Every value below has a reader in src/ and is bounds-checked before use; a value
+# outside its range is dropped rather than clamped, and the consuming node falls
+# back to its own documented default.
+
+max_retry: 3
+timeout_s: 30
+
+# Answer generation is deterministic — the answer body is assembled from the
+# retrieved passages and no model is invoked (config/agent.yaml declares
+# generation_mode: deterministic). The grounding prompt below states the contract
+# a model-backed build must hold to; GenerateAnswerNode resolves the path and
+# records whether it resolved, so a declaration naming a file that is not there is
+# visible in the audit trail. temperature and max_tokens are deliberately absent:
+# with no model invoked there can be no reader for them, and a declared value
+# nothing reads is worse than no declaration.
+llm:
+  system_prompt_template: "prompts/appi_compliance_qa.j2"
+
+# Retrieval tuning for a knowledge base of long regulatory and supervisory
+# documents.
+#   top_k          — how many passages are carried forward (1-64).
+#   score_threshold— the relevance floor on a [0, 1] scale, normalised against the
+#                    best-scoring passage. Compliance answers are used to decide
+#                    disclosure obligations, so the floor is set high: a
+#                    weakly-matching passage is not grounding.
+#   hybrid_search  — also score a passage on its title and body text, not only on
+#                    its keyword list. The corpus carries article numbers and
+#                    product codes that appear in the text and not in the keywords.
+retrieval:
+  top_k: 8
+  score_threshold: 0.75
+  hybrid_search: true
+
+security:
+  s3_gate_enabled: true
